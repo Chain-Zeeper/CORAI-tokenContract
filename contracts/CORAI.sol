@@ -97,23 +97,10 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @dev else tax and limit(only sale) is applied when a lp pool is involved
     /// @dev in case on both sender and receiver is lp pool no tax or limit applied
     function transferFrom(address from,address to,uint256 amount) public virtual override  returns (bool) {
-        bool receiverIsLiquidityPool =  hasRole(liquidity_pool,to);
-        bool senderIsLiquidityPool = hasRole(liquidity_pool, from);
-        uint256 tax;
         address spender = _msgSender();
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
-        validAmount(amount,from,to);
-        // sell from->user to->lp
-        if(saleTaxPercentage!=0 && !senderIsLiquidityPool && feeAddress!= address(0) && receiverIsLiquidityPool && !hasRole(tax_exempt, from) ){            
-            tax = (amount * saleTaxPercentage)/(100 * 1e18);
-            _transfer(from, feeAddress, tax);
-        }
-        // buy from lp to user # note max tx amount will apply
-        if(buyTaxPercentage!=0 && senderIsLiquidityPool && feeAddress!= address(0) && !receiverIsLiquidityPool && !hasRole(tax_exempt, to)){
-            tax = (amount * buyTaxPercentage)/(100 * 1e18);
-            _transfer(to, feeAddress, tax);         
-        } 
+        _transfeFees(from,to,amount);
         return true;
     }
     /// @notice set the fee where tax is colleted . zero address will stop all tax
@@ -128,21 +115,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     function transfer(address to, uint256 amount) public virtual override returns (bool)  {
         address owner = _msgSender();
         _transfer(owner, to, amount);
-        bool receiverIsLiquidityPool =  hasRole(liquidity_pool,to);  
-        bool senderIsLiquidityPool = hasRole(liquidity_pool, owner);
-        uint256 tax;
-        validAmount(amount,msg.sender,to);
-        // buy from lppool to user
-        if(buyTaxPercentage!=0 && senderIsLiquidityPool && feeAddress!= address(0) && !receiverIsLiquidityPool && !hasRole(tax_exempt, to)){
-            tax = (amount * buyTaxPercentage)/(100 * 1e18);
-            _transfer(to, feeAddress, tax);         
-        }
-        // sell from user to lp
-        if(saleTaxPercentage!=0 && !senderIsLiquidityPool && feeAddress!= address(0) && receiverIsLiquidityPool && !hasRole(tax_exempt, owner)){
-            
-            tax = (amount * saleTaxPercentage)/(100 * 1e18);
-            _transfer(owner, feeAddress, tax);
-        }
+        _transfeFees(owner,to,amount);
         return true;
     }
     /// @notice set the fee where txlimit in terms of token on sell to lp pools
@@ -164,8 +137,19 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
         }
     }
 
-    
-
-
-
+    function _transfeFees(address from,address to,uint256 amount) internal{
+        validAmount(amount,from,to);
+        bool receiverIsLiquidityPool =  hasRole(liquidity_pool,to);
+        bool senderIsLiquidityPool = hasRole(liquidity_pool, from);
+        uint256 tax;
+        if(saleTaxPercentage!=0 && !senderIsLiquidityPool && feeAddress!= address(0) && receiverIsLiquidityPool && !hasRole(tax_exempt, from) ){            
+            tax = (amount * saleTaxPercentage)/(100 * 1e18);
+            _transfer(from, feeAddress, tax);
+        }
+        // buy from lp to user # note max tx amount will apply
+        if(buyTaxPercentage!=0 && senderIsLiquidityPool && feeAddress!= address(0) && !receiverIsLiquidityPool && !hasRole(tax_exempt, to)){
+            tax = (amount * buyTaxPercentage)/(100 * 1e18);
+            _transfer(to, feeAddress, tax);         
+        } 
+    }
 }
