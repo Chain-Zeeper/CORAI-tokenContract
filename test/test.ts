@@ -98,7 +98,7 @@ describe("all test", async function () {
     testAmount = BigNumber.from("10000000")
     const poolRole = await AntiSnipe.liquidity_pool()
     expect(await AntiSnipe.grantRole(poolRole, pool.address)).to.be.ok
-    expect(await AntiSnipe.setBurnAddress(taxCollector.address)).to.be.ok
+    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
     await AntiSnipe.approve(wallet.address, testAmount)
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, pool.address, testAmount))
       .to.emit(AntiSnipe, 'Transfer')
@@ -112,7 +112,7 @@ describe("all test", async function () {
     const poolRole = await AntiSnipe.liquidity_pool()
     expect(await AntiSnipe.grantRole(poolRole, pool.address)).to.be.ok
     expect(await AntiSnipe.grantRole(taxExempt, wallet.address)).to.be.ok
-    expect(await AntiSnipe.setBurnAddress(taxCollector.address)).to.be.ok
+    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
     await AntiSnipe.approve(wallet.address, testAmount)
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, pool.address, testAmount))
       .to.emit(AntiSnipe, 'Transfer')
@@ -124,7 +124,7 @@ describe("all test", async function () {
     testAmount = BigNumber.from("10000000")
     const poolRole = await AntiSnipe.liquidity_pool()
     expect(await AntiSnipe.grantRole(poolRole, wallet.address)).to.be.ok
-    expect(await AntiSnipe.setBurnAddress(taxCollector.address)).to.be.ok
+    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
     await AntiSnipe.approve(wallet.address, testAmount)
     await expect(AntiSnipe.connect(wallet).transfer(other.address, testAmount))
       .to.emit(AntiSnipe, 'Transfer')
@@ -159,7 +159,7 @@ describe("all test", async function () {
     const poolRole = await AntiSnipe.liquidity_pool()
     const taxExmept = await AntiSnipe.tax_exempt()
     expect(await AntiSnipe.grantRole(poolRole, pool.address)).to.be.ok
-    expect(await AntiSnipe.setBurnAddress(taxCollector.address)).to.be.ok
+    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
     expect(await AntiSnipe.grantRole(taxExmept, wallet.address)).to.be.ok
     await AntiSnipe.approve(wallet.address, testAmount)
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, pool.address, testAmount))
@@ -171,7 +171,7 @@ describe("all test", async function () {
     const poolRole = await AntiSnipe.liquidity_pool()
     const taxExmept = await AntiSnipe.tax_exempt()
     expect(await AntiSnipe.grantRole(poolRole, wallet.address)).to.be.ok
-    expect(await AntiSnipe.setBurnAddress(taxCollector.address)).to.be.ok
+    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
     expect(await AntiSnipe.grantRole(taxExmept, other.address)).to.be.ok
     await AntiSnipe.approve(wallet.address, testAmount)
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
