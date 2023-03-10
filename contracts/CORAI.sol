@@ -100,7 +100,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
         address spender = _msgSender();
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
-        _transfeFees(from,to,amount);
+        _transferFees(from,to,amount);
         return true;
     }
     /// @notice set the fee where tax is colleted . zero address will stop all tax
@@ -115,7 +115,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     function transfer(address to, uint256 amount) public virtual override returns (bool)  {
         address owner = _msgSender();
         _transfer(owner, to, amount);
-        _transfeFees(owner,to,amount);
+        _transferFees(owner,to,amount);
         return true;
     }
     /// @notice set the fee where txlimit in terms of token on sell to lp pools
@@ -136,8 +136,8 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
             revert overMaxLimit();
         }
     }
-
-    function _transfeFees(address from,address to,uint256 amount) internal{
+    /// @dev transfers fees if applicable
+    function _transferFees(address from,address to,uint256 amount) internal{
         validAmount(amount,from,to);
         bool receiverIsLiquidityPool =  hasRole(liquidity_pool,to);
         bool senderIsLiquidityPool = hasRole(liquidity_pool, from);

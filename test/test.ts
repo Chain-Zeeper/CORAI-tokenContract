@@ -128,12 +128,10 @@ describe("all test", async function () {
     await AntiSnipe.approve(wallet.address, testAmount)
     await expect(AntiSnipe.connect(wallet).transfer(other.address, testAmount))
       .to.emit(AntiSnipe, 'Transfer')
-    // expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("500000"))
-    // await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
-    //   .to.emit(AntiSnipe, 'Transfer')
-    // expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("1000000"))
-
-
+    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("500000"))
+    await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
+      .to.emit(AntiSnipe, 'Transfer')
+    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("1000000"))
   })
   it("max tx Amount ", async () => {
     testAmount = BigNumber.from("10000000")
