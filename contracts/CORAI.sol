@@ -79,7 +79,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @notice must pass 1e18* buytax 
     /// @dev onlu admin can access role
     function setBuyTaxPercentage(uint256 _buytax) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if(_buytax >( 100 *1e18)){
+        if(_buytax >( 25 *1e18)){
             revert invalidTaxValue();
         }
         buyTaxPercentage = _buytax;
@@ -87,7 +87,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @notice must pass 1e18* saletax 
     /// @dev onlu admin can access role
     function setSaleTaxPercentage(uint256 _saletax) external onlyRole(DEFAULT_ADMIN_ROLE){
-        if(_saletax >( 100 *1e18)){
+        if(_saletax >( 25 *1e18)){
             revert invalidTaxValue();
         }
         saleTaxPercentage = _saletax;
