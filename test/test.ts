@@ -133,22 +133,28 @@ describe("all test", async function () {
       .to.emit(AntiSnipe, 'Transfer')
     expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("1000000"))
   })
+  it("max tx amountLower Bound",async()=>{
+    expect(await AntiSnipe.getLowestPossibleTXLimit()).to.be.eq(ethers.utils.parseUnits("4000"));
+    await expect(AntiSnipe.setMaxTxAmount(ethers.utils.parseUnits("3999"))).to.be.revertedWithCustomError(AntiSnipe,"invalidTxLimit")
+    expect (await AntiSnipe.setMaxTxAmount(ethers.utils.parseUnits("4000"))).to.be.ok
+    expect (await AntiSnipe.setMaxTxAmount(0)).to.be.ok
+  })
   it("max tx Amount ", async () => {
-    testAmount = BigNumber.from("10000000")
+    testAmount = ethers.utils.parseUnits("10000000")
     const poolRole = await AntiSnipe.liquidity_pool()
     await AntiSnipe.approve(wallet.address, ethers.constants.MaxUint256)
     await AntiSnipe.connect(other).approve(wallet.address, ethers.constants.MaxUint256)
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
       .to.emit(AntiSnipe, 'Transfer')
-    expect(await AntiSnipe.setMaxTxAmount(BigNumber.from("60000"))).to.be.ok
+    expect(await AntiSnipe.setMaxTxAmount(ethers.utils.parseUnits("60000"))).to.be.ok
     expect(await AntiSnipe.grantRole(poolRole, other.address)).to.be.ok
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
       .to.be.revertedWithCustomError(AntiSnipe, "overMaxLimit");
-    await expect(AntiSnipe.connect(wallet).transferFrom(other.address, wallet.address, BigNumber.from("60000")))
+    await expect(AntiSnipe.connect(wallet).transferFrom(other.address, wallet.address, ethers.utils.parseUnits("60000")))
       .to.emit(AntiSnipe, 'Transfer')
     await expect(AntiSnipe.connect(wallet).transfer(other.address, testAmount))
       .to.be.revertedWithCustomError(AntiSnipe, "overMaxLimit");
-    await expect(AntiSnipe.connect(other).transfer(wallet.address, BigNumber.from("60000")))
+    await expect(AntiSnipe.connect(other).transfer(wallet.address, ethers.utils.parseUnits("60000")))
       .to.emit(AntiSnipe, 'Transfer')
   })
 

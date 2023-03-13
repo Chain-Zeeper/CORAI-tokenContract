@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 error invalidTaxValue();
 error overMaxLimit();
+error invalidTxLimit();
 error overAllowedBalance();
 error zeroAddress();
 /** 
@@ -19,7 +20,9 @@ error zeroAddress();
 contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @notice dead address used to burn tokens
     address constant private NullAddress = 0x000000000000000000000000000000000000dEaD;
-
+    /// @notice percent of total supply txamount lower limit scaled by 1e18 0.0004 %
+    /// @dev limit must be 0 or above lowestTXLimitPercent of total supply
+    uint256 public lowestTXLimitPercent =  400000000000000;
     /// @notice liquidity_pool role identifier. used to apply tax on liquidity pools
     /// @dev for use with role based access control.from open zeeplin access control
     /// @return  liquidity_pool  role identifier
@@ -119,12 +122,21 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
         return true;
     }
     /// @notice set the fee where txlimit in terms of token on sell to lp pools
-    /// @dev  zetting to zero turns off limit
+    /// @dev  cannot be lower than lowertaxlimit percet of total supply
     /// @dev only admin can change
     function setMaxTxAmount (uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE){
+        uint256 lowestPossibleTXLimit =getLowestPossibleTXLimit();
+        if(amount != 0 && amount<lowestPossibleTXLimit){
+            revert invalidTxLimit();
+        }
         maxTxAmount = amount;
     }
-
+    /// @notice get the lowest possible tx limit value
+    /// @dev is 0.0004 % of total supply 
+    function getLowestPossibleTXLimit() public view returns(uint256){
+        uint256 limit = totalSupply() * lowestTXLimitPercent /(100 * 1e18);
+        return limit;
+    }
     /// @dev  internal func to apply tx limit if sell to lp pool
     /// @dev ignored incase between lp pools
     function validAmount(uint256 amount,address from,address to) internal view{
