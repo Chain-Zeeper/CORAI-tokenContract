@@ -94,45 +94,6 @@ describe("all test", async function () {
     expect(await AntiSnipe.balanceOf(other.address)).to.eq(testAmount)
   })
 
-  it("saleTax/burn", async () => {
-    testAmount = BigNumber.from("10000000")
-    const poolRole = await AntiSnipe.liquidity_pool()
-    expect(await AntiSnipe.grantRole(poolRole, pool.address)).to.be.ok
-    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
-    await AntiSnipe.approve(wallet.address, testAmount)
-    await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, pool.address, testAmount))
-      .to.emit(AntiSnipe, 'Transfer')
-    await expect(AntiSnipe.connect(wallet).transfer(pool.address, testAmount))
-      .to.emit(AntiSnipe, 'Transfer')
-    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("1000000"))
-  })
-  it("CORAI taxExempt ", async () => {
-    const taxExempt = await AntiSnipe.tax_exempt()
-    testAmount = BigNumber.from("10000000")
-    const poolRole = await AntiSnipe.liquidity_pool()
-    expect(await AntiSnipe.grantRole(poolRole, pool.address)).to.be.ok
-    expect(await AntiSnipe.grantRole(taxExempt, wallet.address)).to.be.ok
-    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
-    await AntiSnipe.approve(wallet.address, testAmount)
-    await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, pool.address, testAmount))
-      .to.emit(AntiSnipe, 'Transfer')
-    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("0"))
-  })
-
-
-  it("buyTax/burn", async () => {
-    testAmount = BigNumber.from("10000000")
-    const poolRole = await AntiSnipe.liquidity_pool()
-    expect(await AntiSnipe.grantRole(poolRole, wallet.address)).to.be.ok
-    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
-    await AntiSnipe.approve(wallet.address, testAmount)
-    await expect(AntiSnipe.connect(wallet).transfer(other.address, testAmount))
-      .to.emit(AntiSnipe, 'Transfer')
-    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("500000"))
-    await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
-      .to.emit(AntiSnipe, 'Transfer')
-    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("1000000"))
-  })
   it("max tx amountLower Bound",async()=>{
     expect(await AntiSnipe.getLowestPossibleTXLimit()).to.be.eq(ethers.utils.parseUnits("4000"));
     await expect(AntiSnipe.setMaxTxAmount(ethers.utils.parseUnits("3999"))).to.be.revertedWithCustomError(AntiSnipe,"invalidTxLimit")
@@ -142,6 +103,8 @@ describe("all test", async function () {
   it("max tx Amount ", async () => {
     testAmount = ethers.utils.parseUnits("10000000")
     const poolRole = await AntiSnipe.liquidity_pool()
+    const limitexempt = await AntiSnipe.limit_exempt()
+   
     await AntiSnipe.approve(wallet.address, ethers.constants.MaxUint256)
     await AntiSnipe.connect(other).approve(wallet.address, ethers.constants.MaxUint256)
     await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
@@ -156,33 +119,10 @@ describe("all test", async function () {
       .to.be.revertedWithCustomError(AntiSnipe, "overMaxLimit");
     await expect(AntiSnipe.connect(other).transfer(wallet.address, ethers.utils.parseUnits("60000")))
       .to.emit(AntiSnipe, 'Transfer')
-  })
-
-  it("tax exempt sale", async () => {
-    testAmount = BigNumber.from("10000000")
-    const poolRole = await AntiSnipe.liquidity_pool()
-    const taxExmept = await AntiSnipe.tax_exempt()
-    expect(await AntiSnipe.grantRole(poolRole, pool.address)).to.be.ok
-    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
-    expect(await AntiSnipe.grantRole(taxExmept, wallet.address)).to.be.ok
-    await AntiSnipe.approve(wallet.address, testAmount)
-    await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, pool.address, testAmount))
+      await AntiSnipe.grantRole(limitexempt,wallet.address)
+      await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
       .to.emit(AntiSnipe, 'Transfer')
-    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("0"))
   })
-  it("tax exempt buy", async () => {
-    testAmount = BigNumber.from("10000000")
-    const poolRole = await AntiSnipe.liquidity_pool()
-    const taxExmept = await AntiSnipe.tax_exempt()
-    expect(await AntiSnipe.grantRole(poolRole, wallet.address)).to.be.ok
-    expect(await AntiSnipe.setFeeAddress(taxCollector.address)).to.be.ok
-    expect(await AntiSnipe.grantRole(taxExmept, other.address)).to.be.ok
-    await AntiSnipe.approve(wallet.address, testAmount)
-    await expect(AntiSnipe.connect(wallet).transferFrom(wallet.address, other.address, testAmount))
-      .to.emit(AntiSnipe, 'Transfer')
-    expect((await AntiSnipe.balanceOf(taxCollector.address))).to.eq(BigNumber.from("0"))
-  })
-
 })
 
 

@@ -7,13 +7,13 @@ async function main() {
   console.log(`Deploying to network ${networkName}`)
   const _Token = await ethers.getContractFactory("CORAI")
   console.log(`Deploying  TokenContract " CORAI "`)
-  const Token = await  _Token.deploy(config.initialSupply[networkName],config.name[networkName],config.symbol[networkName],config.to[networkName],config.taxCollector[networkName])
+  const Token = await  _Token.deploy(config.initialSupply[networkName],config.name[networkName],config.symbol[networkName],config.to[networkName])
   console.log(`CORAI deployed at: ${Token.address}`)
   await Token.deployed()
   try{
     await run("verify:verify", {
       address: Token.address,
-      constructorArguments: [config.initialSupply[networkName],config.name[networkName],config.symbol[networkName],config.to[networkName],config.taxCollector[networkName]],
+      constructorArguments: [config.initialSupply[networkName],config.name[networkName],config.symbol[networkName],config.to[networkName]],
     })
   }catch(err:any){
     console.log(`error : ${err.message}`)
