@@ -22,7 +22,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     address constant private NullAddress = 0x000000000000000000000000000000000000dEaD;
     /// @notice percent of total supply txamount lower limit scaled by 1e18 0.0004 %
     /// @dev limit must be 0 or above lowestTXLimitPercent of total supply
-    uint256 public lowestTXLimitPercent =  400000000000000;
+    uint256 public  constant lowestTXLimitPercent =  400000000000000;
     /// @notice liquidity_pool role identifier. used to apply tax on liquidity pools
     /// @dev for use with role based access control.from open zeeplin access control
     /// @return  liquidity_pool  role identifier
