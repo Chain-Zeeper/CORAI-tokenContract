@@ -31,7 +31,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
 
     /// @notice limit_exempt exempt from sell limit  ues with mm wallets
     /// @return limit_exempt role identifier
-    bytes32 public constant limit_exempt = keccak256("tax_exempt");
+    bytes32 public constant limit_exempt = keccak256("limit_exempt");
     
     /// @notice max tx limit. only applied on sell to liquidity pool
     /// @return  maxTxAmount for sell to pools
