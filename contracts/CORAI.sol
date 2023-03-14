@@ -23,34 +23,16 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @notice percent of total supply txamount lower limit scaled by 1e18 0.0004 %
     /// @dev limit must be 0 or above lowestTXLimitPercent of total supply
     uint256 public  constant lowestTXLimitPercent =  400000000000000;
+
     /// @notice liquidity_pool role identifier. used to apply tax on liquidity pools
     /// @dev for use with role based access control.from open zeeplin access control
     /// @return  liquidity_pool  role identifier
     bytes32 public constant liquidity_pool = keccak256("liquidity_pool");
-    /// @notice tax exempt from all tax as well as tx limits. ues with mm wallets
-    /// @return tax_exempt role identifier
-    bytes32 public constant tax_exempt = keccak256("tax_exempt");
 
-    /// @notice value used in calculations (calculations scaled up by percision )
-    /// @dev for calculations for solidity floating point limitations
-    /// @return  percision the value used in calculations scaled up by
-    uint256 constant public percision = 1e18; 
-
-    /// @notice sale tax applied on sell to liquidity pools
-    /// @dev must grant liquidity pool role to be applied. is scaled by 1e18
-    /// @return  saleTaxPercentage which is 1e18 * saletax
-    uint256 public saleTaxPercentage = 15 * percision;
-
-    /// @notice buy tax applied on buy from liquidity pools
-    /// @dev must grant liquidity pool role to be applied. is scaled by 1e18
-    /// @return  buyTaxPercentage whis is 1e18 * buytax
-    uint256 public buyTaxPercentage = 0 * percision;
-
+    /// @notice limit_exempt exempt from sell limit  ues with mm wallets
+    /// @return limit_exempt role identifier
+    bytes32 public constant limit_exempt = keccak256("tax_exempt");
     
-    /// @notice fee address wher tax is collected
-    /// @return  feeAddress
-    address public feeAddress;
-
     /// @notice max tx limit. only applied on sell to liquidity pool
     /// @return  maxTxAmount for sell to pools
     uint256  public maxTxAmount;
@@ -58,44 +40,26 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @notice Deploys the smart contract and creates mints inital sypply to "to" address
     /// @dev owner ship is transfer on deployment and deployer address has no access to any admin functions
     /// @dev pass normal erc20 parameters such as symbol name. with to address and fee address
-    constructor(uint256 initialSupply_,string memory name_,string memory symbol_,address to_,address feeAddress_) ERC20(name_, symbol_)   ERC20Permit(name_){
+    constructor(uint256 initialSupply_,string memory name_,string memory symbol_,address to_) ERC20(name_, symbol_)   ERC20Permit(name_){
         if(to_ == address(0)){
             revert zeroAddress();
         }
         _transferOwnership(to_);
         _grantRole(DEFAULT_ADMIN_ROLE, to_);
-        _grantRole(tax_exempt, to_);
-        _grantRole(tax_exempt, feeAddress_);
-        feeAddress= feeAddress_;
+        _grantRole(limit_exempt, to_);
         _mint(to_,initialSupply_);
-        maxTxAmount = 1000000000000000000000;
-        
+        maxTxAmount = 200000000000000000000000;      
     }
+
     /** 
     * @return totalsupply factoring in burned tokens sent to dead address
     **/ 
     function totalSupply() public view  override returns (uint256) {
-        uint256 _totalSupplyWithNull = super.totalSupply();
-        uint256 _totalSupply = _totalSupplyWithNull - balanceOf(NullAddress);
-        return _totalSupply;
+        uint256 totalSupplyWithNull_ = super.totalSupply();
+        uint256 totalSupply_ = totalSupplyWithNull_ - balanceOf(NullAddress);
+        return totalSupply_;
     }
-    /// @notice must pass 1e18* buytax 
-    /// @dev onlu admin can access role
-    function setBuyTaxPercentage(uint256 _buytax) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if(_buytax >( 25 *1e18)){
-            revert invalidTaxValue();
-        }
-        buyTaxPercentage = _buytax;
-    }
-    /// @notice must pass 1e18* saletax 
-    /// @dev onlu admin can access role
-    function setSaleTaxPercentage(uint256 _saletax) external onlyRole(DEFAULT_ADMIN_ROLE){
-        if(_saletax >( 25 *1e18)){
-            revert invalidTaxValue();
-        }
-        saleTaxPercentage = _saletax;
-    }
-    
+
     /// @dev normal erc20 transferFrom function incase of wallet transfer
     /// @dev else tax and limit(only sale) is applied when a lp pool is involved
     /// @dev in case on both sender and receiver is lp pool no tax or limit applied
@@ -103,13 +67,8 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
         address spender = _msgSender();
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
-        _transferFees(from,to,amount);
+        validAmount(amount,from,to);
         return true;
-    }
-    /// @notice set the fee where tax is colleted . zero address will stop all tax
-    /// @dev only admin can change
-    function setFeeAddress(address _feeAddress)external onlyRole(DEFAULT_ADMIN_ROLE){
-        feeAddress = _feeAddress;
     }
 
     /// @dev normal erc20 transfer function incase of wallet transfer
@@ -118,7 +77,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     function transfer(address to, uint256 amount) public virtual override returns (bool)  {
         address owner_ = _msgSender();
         _transfer(owner_, to, amount);
-        _transferFees(owner_,to,amount);
+        validAmount(amount,owner_,to);
         return true;
     }
     /// @notice set the fee where txlimit in terms of token on sell to lp pools
@@ -143,25 +102,10 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
         bool receiverIsLiquidityPool =  hasRole(liquidity_pool,to);
         bool senderIsLiquidityPool = hasRole(liquidity_pool, from);
         if((receiverIsLiquidityPool && !senderIsLiquidityPool)
-        && (amount > maxTxAmount && maxTxAmount!= 0 ) && !hasRole(tax_exempt, to) && !hasRole(tax_exempt, from)
+        && (amount > maxTxAmount && maxTxAmount!= 0 ) && !hasRole(limit_exempt, to) && !hasRole(limit_exempt, from)
         ){
             revert overMaxLimit();
         }
     }
-    /// @dev transfers fees if applicable
-    function _transferFees(address from,address to,uint256 amount) internal{
-        validAmount(amount,from,to);
-        bool receiverIsLiquidityPool =  hasRole(liquidity_pool,to);
-        bool senderIsLiquidityPool = hasRole(liquidity_pool, from);
-        uint256 tax;
-        if(saleTaxPercentage!=0 && !senderIsLiquidityPool && feeAddress!= address(0) && receiverIsLiquidityPool && !hasRole(tax_exempt, from) ){            
-            tax = (amount * saleTaxPercentage)/(100 * 1e18);
-            _transfer(from, feeAddress, tax);
-        }
-        // buy from lp to user # note max tx amount will apply
-        if(buyTaxPercentage!=0 && senderIsLiquidityPool && feeAddress!= address(0) && !receiverIsLiquidityPool && !hasRole(tax_exempt, to)){
-            tax = (amount * buyTaxPercentage)/(100 * 1e18);
-            _transfer(to, feeAddress, tax);         
-        } 
-    }
+
 }
