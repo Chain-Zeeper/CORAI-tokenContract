@@ -5,15 +5,15 @@ export default{
         "testnet":BigNumber.from("300000000000000000000000000")
     },
     name:{
-        "mainnet":"RYUU2",
+        "mainnet":"CORAI",
         "testnet":"test corai"
     },
     symbol:{
-        "mainnet":"RYUU2",
+        "mainnet":"CORAI",
         "testnet":"tCORAI"
     },
     to:{
-        "mainnet":"0x3f54C4F76f5f288a7015B7882DAe571e373aaea7",
+        "mainnet":"0x409E875Cf5AD95A56333CA4933F36804D2e93506",
         "testnet":"0x6ceb2ADf9C413f914297A2001a54258c80C0b764"
 
     },
