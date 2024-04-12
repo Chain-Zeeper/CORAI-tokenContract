@@ -1,18 +1,17 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
-import { expect } from "chai";
+import { expect } from "hardhat";
 import { ethers } from "hardhat";
 import { tokenFixtures } from "./shared/fixtures";
 import { Contract, BigNumber, utils, constants } from "ethers"
 const { MaxUint256 } = constants
 const { hexlify, keccak256, defaultAbiCoder, toUtf8Bytes } = utils
 import { getPermitSignature } from "./shared/utilities";
-import { CORAI } from "../typechain-types";
+import { CORTX } from "../typechain-types";
 
 
 describe("all test", async function () {
   let [wallet, other, pool, taxCollector]: any = [undefined, undefined]
-  let AntiSnipe: CORAI
+  let AntiSnipe: CORTX
   let initialSupply: BigNumber
   let testAmount: BigNumber
   let deadAddress = "0x000000000000000000000000000000000000dEaD"

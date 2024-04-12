@@ -5,10 +5,10 @@ async function main() {
   await run("compile");
   const networkName = network.name as  keyof typeof config.initialSupply;
   console.log(`Deploying to network ${networkName}`)
-  const _Token = await ethers.getContractFactory("CORAI")
-  console.log(`Deploying  TokenContract " CORAI "`)
+  const _Token = await ethers.getContractFactory("CORTX")
+  console.log(`Deploying  TokenContract " CORTX "`)
   const Token = await  _Token.deploy(config.initialSupply[networkName],config.name[networkName],config.symbol[networkName],config.to[networkName])
-  console.log(`CORAI deployed at: ${Token.address}`)
+  console.log(`CORTX deployed at: ${Token.address}`)
   await Token.deployed()
   try{
     await run("verify:verify", {

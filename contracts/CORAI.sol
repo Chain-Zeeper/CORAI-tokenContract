@@ -17,7 +17,7 @@ error zeroAddress();
 * @author sandwizard
 * @dev Inherits the OpenZepplin ERC20 implentation
 **/ 
-contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
+contract CORTX is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
     /// @notice dead address used to burn tokens
     address constant private NullAddress = 0x000000000000000000000000000000000000dEaD;
     /// @notice percent of total supply txamount lower limit scaled by 1e18 0.0004 %
@@ -48,7 +48,7 @@ contract CORAI is ERC20, ERC20Burnable,AccessControl,ERC20Permit,Ownable{
         _grantRole(DEFAULT_ADMIN_ROLE, to_);
         _grantRole(limit_exempt, to_);
         _mint(to_,initialSupply_);
-        maxTxAmount = 200000000000000000000000;      
+        maxTxAmount = 90000000000000000000000;      
     }
 
     /** 

@@ -1,24 +1,24 @@
-import {BigNumber} from "ethers"
+import { ethers } from "hardhat"
 export default{
     initialSupply:{
-        "mainnet":BigNumber.from("1000000000000000000000000000"),
-        "testnet":BigNumber.from("300000000000000000000000000")
+        "mainnet":ethers.BigNumber.from("997900000000000000000000000"),
+        "testnet":ethers.BigNumber.from("300000000000000000000000000")
     },
     name:{
-        "mainnet":"CORAI",
+        "mainnet":"CORTX",
         "testnet":"test corai"
     },
     symbol:{
-        "mainnet":"CORAI",
+        "mainnet":"CORTX",
         "testnet":"tCORAI"
     },
     to:{
-        "mainnet":"0x409E875Cf5AD95A56333CA4933F36804D2e93506",
+        "mainnet":"0x7dB00699E5C50e3b3435fbB83EABB89A26A3c15b",
         "testnet":"0x6ceb2ADf9C413f914297A2001a54258c80C0b764"
 
     },
     taxCollector:{
-        "mainnet":"0x70d50169039556D0F2340d2317a20d9fc07aFC1c",
+        "mainnet":"0x7dB00699E5C50e3b3435fbB83EABB89A26A3c15b",
         "testnet":"0x6ceb2ADf9C413f914297A2001a54258c80C0b764"
 
     }
